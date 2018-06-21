@@ -17,14 +17,14 @@ from scrape_linkedin import ProfileScraper
 import pandas as pd
 
 
-dates = []
+names = []
 linkedin_urls = []
 
-with open('Profiles/CapOneDos.csv') as csvDataFile:
+with open('ProfileLinks/DataScienceTresNoName.csv') as csvDataFile:
     csvReader = csv.reader(csvDataFile)
     next(csvReader, None)
     for row in csvReader:
-        #dates.append(row[0])
+        #names.append(row[1])
         linkedin_urls.append(row[0])
 
 for linkedin_url in linkedin_urls:
@@ -52,7 +52,7 @@ for linkedin_url in linkedin_urls:
 
         result = pd.concat([personalinfo, skills, experiences, interests, accomplishments], ignore_index=True)
 
-        result.to_csv('CapOneDos/'+linkedin_url+'.csv')
+        result.to_csv('DataScienceTres/'+linkedin_url+'.csv')
 
         sleep(randrange(45,60))
 
