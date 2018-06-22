@@ -15,6 +15,7 @@ import base64
 import flask
 import glob
 import os
+from random import randint
 
 #Import libraries for data manipulation
 import re
@@ -35,17 +36,14 @@ from nltk.corpus import stopwords
 stop_words = stopwords.words('english')
 
 import re, nltk, spacy
+import en_core_web_sm
+nlp = en_core_web_sm.load()
 
 # Import Sklearn for LDA model
 from sklearn.decomposition import LatentDirichletAllocation, TruncatedSVD
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics.pairwise import euclidean_distances
-
-import matplotlib.pyplot as plt
-
-import bigfloat
-bigfloat.exp(5000,bigfloat.precision(100))
 
 '''
 ------------
@@ -168,7 +166,7 @@ Predict Topics for Job Description
 ----------
 '''
 #Define lda output
-nlp = spacy.load('en', disable=['parser', 'ner'])
+#nlp = spacy.load('en', disable=['parser', 'ner'])
 
 def similar_documents(text, doc_topic_probs, documents = linkedinSum, nlp=nlp, top_n=5, verbose=False):
     topic, x  = predict_topic(text)
@@ -202,8 +200,12 @@ static_image_route = '/static/'
 Build Dash Application
 -----------
 '''
-#Import app
-app = dash.Dash()
+# Setup the app
+# Make sure not to change this file name or the variable names below,
+# the template is configured to execute 'server' on 'app.py'
+server = flask.Flask(__name__)
+#server.secret_key = os.environ.get('secret_key', str(randint(0, 1000000)))
+app = dash.Dash(__name__, server=server)
 
 app.config.supress_callback_exceptions = True
 
@@ -251,7 +253,7 @@ app.layout = html.Div(children=[
 
     #holder for image
     html.Div([
-        html.Img(id='image', style={'display': 'block', 'margin-left': '80', 'margin-right': '20', 'width': '12%'}),
+        html.Img(id='image', style={'display': 'block', 'margin-left': 'auto', 'margin-right': 'auto', 'width': '20%'}),
       ],),
 
     #Div for graph placement
@@ -270,23 +272,29 @@ def update_graph(selected_dropdown_value):
     if selected_dropdown_value == jobDescription.JobID[0]:
         return {'data': [
                     {'x': ['Leadership', 'Tech Savy', 'Academic' ],
-                     'y': [prob_scores[0,0], prob_scores[0,1], prob_scores[0,2]], 'type': 'bar' , 'name': 'SF' },],
+                     'y': [prob_scores[0,0], prob_scores[0,1], prob_scores[0,2]], 'type': 'bar' , 'name': 'CD1' },
+                    {'x': ['Leadership', 'Tech Savy', 'Academic' ],
+                     'y': [0.1, 0.6, 0.3], 'type': 'bar' , 'name': 'JB1' },],
                 'layout': {
-                     'title': 'Employee Traits'}}
+                     'title': 'Business Traits'}}
 
     elif selected_dropdown_value == jobDescription.JobID[1]:
         return {'data': [
                     {'x': ['Leadership', 'Tech Savy', 'Academic' ],
-                     'y': [prob_scores2[0,0], prob_scores2[0,1], prob_scores2[0,2]], 'type': 'bar', 'name': 'SF2' },],
+                     'y': [prob_scores2[0,0], prob_scores2[0,1], prob_scores2[0,2]], 'type': 'bar', 'name': 'CD2' },
+                    {'x': ['Leadership', 'Tech Savy', 'Academic' ],
+                     'y': [0.1, 0.7, 0.3], 'type': 'bar' , 'name': 'JB2' },],
                 'layout': {
-                    'title': 'Employee Traits'}}
+                    'title': 'Business Traits'}}
 
     else:
         return {'data': [
                     {'x': ['Leadership', 'Tech Savy', 'Academic' ],
-                     'y': [prob_scores3[0,0], prob_scores3[0,1], prob_scores3[0,2]], 'type': 'bar', 'name': 'SF3' },],
+                     'y': [prob_scores3[0,0], prob_scores3[0,1], prob_scores3[0,2]], 'type': 'bar', 'name': 'CD3' },
+                    {'x': ['Leadership', 'Tech Savy', 'Academic' ],
+                     'y': [0.2, 0.6, 0.2], 'type': 'bar' , 'name': 'JB3' },],
                 'layout': {
-                    'title': 'Employee Traits'}}
+                    'title': 'Business Traits'}}
 
 #server call back for profile image update
 @app.callback(dash.dependencies.Output('image', 'src'), [dash.dependencies.Input('dropdown', 'value')])
@@ -302,4 +310,4 @@ def update_image_src(selected_dropdown_value):
 
 #Run the server
 if __name__ == '__main__':
-    app.run_server()
+    app.server.run()
